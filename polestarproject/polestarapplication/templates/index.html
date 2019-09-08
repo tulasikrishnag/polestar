@@ -1,0 +1,89 @@
+<!DOCTYPE html>                                                                                                        
+<html lang="en">                                                                                                       
+  <head>                                                                                                               
+    <meta charset="utf-8" />                                                                                           
+    <title>Ship Tracking</title>                                                                                   
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"                                     
+          integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="  
+          crossorigin=""/>                                                                                             
+     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>                                                                                                            
+      #mapid {                                                                                                         
+        height: 540px;                                                                                                 
+        width: 900px;                                                                                                  
+        margin: auto;                                                                                                  
+      }                                                                                                                
+      h1 { text-align: center; }   
+       @media (min-width: 576px) {
+      .jumbotron {
+      
+      padding: 0;
+      }
+    }                                                                                    
+    </style>                                                                                                           
+  </head>                                                                                                              
+  <body>
+  <div class="jumbotron" align="center">  
+    <h2>Ship Tracking</h2>   
+    <p>Advanced, global satellite ship tracking software for real-time vessel monitoring. 
+    <br>Combining tracking data from AIS and on-board equipment to give you reliable, 
+    <br>accurate and timely situational awareness.</p> 
+    </div>                                                                                 
+    <div id="mapid"></div>                                                                                             
+                                                                                                                       
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"                                                      
+            integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+            crossorigin="">                                                                                            
+    </script>                                                                                                          
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous">
+    </script>
+                                                                                                        
+    <script type="text/javascript">                                                                                    
+      $(document).ready(function () {
+        var mapboxAccessToken = 'pk.eyJ1Ijoiam9wYW4iLCJhIjoiY2pxd3J0bHl4MHh1YjN4bXFkbjY2dHY4NCJ9.nQEfwXf3OEOah9gVYeeoXQ';
+        var map = L.map('mapid').setView([39.433, -0.302], 2.2);                                                
+                                                                                                               
+        // Add MapBox layer.                                                                                   
+        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + mapboxAccessToken, {
+          id: 'mapbox.light',                                                                          
+          attribution: 'Pole Star Space Applications, Ltd.'                                                              
+        }).addTo(map);                                                                                                   
+
+        $.ajax({
+          url: 'http://localhost:8000/api/ships/',
+          dataType: 'json'
+        }).done(function(ships_data) {
+          // Got the current Ships in database. Now get the Positions list for
+          // each one of the ships.
+          for (i = 0; i < ships_data.length; i++) {
+            (function (currentShip) {
+              $.ajax({
+                url: 'http://localhost:8000/api/positions/' + currentShip.imo,
+                dataType: 'json'
+              }).done(function(positions_data) {
+                // Add current position marker (1st position in the list).
+                var latest = positions_data[0];
+                var marker = L.marker([latest.latitude, latest.longitude]).addTo(map);        
+                marker.bindPopup('<b>' + currentShip.name + '</b><br/>IMO: ' + currentShip.imo).openPopup();
+
+                // Next positions are the trail.
+                for (p = 1; p < positions_data.length; p++) {
+                  position = positions_data[p];
+
+                  var circle = L.circle([position.latitude, position.longitude], {
+                    color: 'red',
+                    fillColor: '#f03',
+                    fillOpacity: 0.5,
+                    radius: 300 
+                  }).addTo(map);
+                }   
+              }); 
+            })(ships_data[i]);
+          }
+        });
+      });
+    </script>                                                                 
+  </body>                                                                     
+</html>
