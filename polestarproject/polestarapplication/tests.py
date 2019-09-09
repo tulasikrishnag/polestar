@@ -1,9 +1,4 @@
 from django.test import TestCase
 
-# Create your tests here.
-
-from  polestarapplication.testcases.TestImportCSV import TestImportCSV
-from django.test import Client
-
-
-
+# Imports the testsuite from the custom class and execute accordingly
+from  polestarapplication.testcases.TestImportService import TestImportService
