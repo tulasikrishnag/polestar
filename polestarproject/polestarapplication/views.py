@@ -34,6 +34,6 @@ class getPositionDetails(APIView):
     def get(self, request, imo):
 
         trackinglist = ShipPositionDetails.objects.filter(
-            imo=imo).order_by('-created_date')
+            imo=imo).order_by('-position_dt_tm')
         serialiazer = ShipPositionDetailsSerializer(trackinglist, many=True)
         return Response(serialiazer.data)
