@@ -2,6 +2,7 @@ from django.db import models
 
 from datetime import datetime 
 from django.utils import timezone
+from datetime import timedelta 
 from django.utils.timezone import make_aware
   # Create your models here.
 class ShipPositionDetails(models.Model):

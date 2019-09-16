@@ -1,9 +1,9 @@
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+
 from polestarapplication.models import ShipDetail,ShipPositionDetails
 from polestarapplication.serializers import ShipDetailSerializer,ShipPositionDetailsSerializer
 
@@ -20,10 +20,13 @@ param: self, request
 class getShipDetails(APIView):
 
     def get(self, request):
-
-        shiplist = ShipDetail.objects.all()
-        serialiazer = ShipDetailSerializer(shiplist, many=True)
-        return Response(serialiazer.data)
+        try:
+            shiplist = ShipDetail.objects.all()
+            serialiazer = ShipDetailSerializer(shiplist, many=True)
+            return Response(serialiazer.data,status=status.HTTP_200_OK)
+        except Exception:
+            return Response(serialiazer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
 
 """
 This class designed to return the position details from the database
@@ -32,8 +35,10 @@ param: self, request
 class getPositionDetails(APIView):
 
     def get(self, request, imo):
-
-        trackinglist = ShipPositionDetails.objects.filter(
+        try:
+            trackinglist = ShipPositionDetails.objects.filter(
             imo=imo).order_by('-position_dt_tm')
-        serialiazer = ShipPositionDetailsSerializer(trackinglist, many=True)
-        return Response(serialiazer.data)
+            serialiazer = ShipPositionDetailsSerializer(trackinglist, many=True)
+            return Response(serialiazer.data,status=status.HTTP_200_OK)
+        except Exception:
+            return Response(serialiazer.errors, status=status.HTTP_400_BAD_REQUEST)
